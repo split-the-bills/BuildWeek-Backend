@@ -1,2 +1,1 @@
 # BuildWeek-Backend
-SQLITE,Knex
