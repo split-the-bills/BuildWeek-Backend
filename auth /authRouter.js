@@ -2,7 +2,7 @@ const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Users = require("../users/users-model.js");
-const { jwtKey, authenticate } = require("./authenticate.js");
+const { jwtKey } = require("./authenticate.js");
 
 //const jwtSecret = require("../config/secret.js").jwtSecret;
 // could also descruct it
@@ -32,8 +32,9 @@ router.post("/register", (req, res) => {
 router.post("/login", (req, res) => {
   let username = req.body.username;
   let { password } = req.body;
-  Users.findBy({ username })
-    .first()
+
+  console.log("USername ", username);
+  Users.findBy({ username: username })
     .then(user => {
       if (user && bcrypt.compareSync(password, user.password)) {
         const token = generateToken(user);
