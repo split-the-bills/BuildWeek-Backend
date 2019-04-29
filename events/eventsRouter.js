@@ -2,6 +2,7 @@ const router = require("express").Router();
 const eventDB = require("./events-model.js");
 const Users = require("../users/users-model");
 const mapsDB = require("../maps/maps-model.js");
+const { restircted } = require("../auth /authenticate");
 
 router.post("/", async (req, res) => {
   //1. Check if event has all properties reauired
@@ -36,7 +37,7 @@ router.post("/", async (req, res) => {
       user = users[0];
 
       //We found valid user, replace its id by email from request.
-      console.log("THE PERSON WHO PAID IS:", user);
+      console.log("THE PERSON WHO PAID IS:", users);
       event.paid_by = user.id;
       console.log("THE PERSON WHO PAID IS:", user.id);
 
@@ -108,8 +109,70 @@ router.post("/", async (req, res) => {
   }
 });
 
-//1. Get my outgoing
-router.post("/payout", async (req, res) => {});
+router.get("/getdues", restircted, async (req, res) => {
+  const userId = req.userInfo.subject;
+  console.log("Got user id as " + userId);
+
+  //Lookup map table by filter of userId, and get all events for this user
+  const eventsPresent = await mapsDB.findBy({ user_id: userId });
+  console.log("Events from map table",eventsPresent); //events .present is an array of objects which  has all the events including userid and paymentpart
+  // in which a partyicular user was present
+  //res.status(200).json({ message: "returning dues", dues: eventsPresent });
+  // {eid1, userId, hisPart1}, {eid2, userId, hisPart2},....{eidn, userId, hisPartn}
+
+  let dues = [];
+  // //For each of eidi, look up event table to paid_byi for that eventevenevent.
+  // for (i = 0; i < eventsPresent.length; i++) {
+  //   console.log("Looking up event ", eventsPresent[i].event_id);
+  //   const events = await eventDB.findBy({ id: eventsPresent[i].event_id }); //Array
+  //   if (events && events.length != 0) {
+  //     const event = events[0];
+
+  //     //whole event object
+  //     //event.paid_by is the id of user who paid for that event
+  //     if (event.paid_by == userId) {
+  //       //if this user has paid then skip  this event
+  //       continue;
+  //     }
+  //     console.log("Lookup user ", event);
+  //     const payers = await Users.findBy({ id: event.paid_by });
+  //     if (payers && payers.length != 0) {
+  //       payer = payers[0];
+  //       dues.push({
+  //         username: payer.username,
+  //         email: payer.email,
+  //         amountDue: eventsPresent[i].to_pay,
+  //         eventName: event.event_name
+  //       });
+  //     }
+  //   }
+  // }
+  for (i = 0; i < eventsPresent.length; i++) {
+    const event = eventsPresent[i];
+    dues.push(
+      {
+        "event_name" : event.event_name,
+        "email" : event.email,
+        "username" : event.username,
+        "amount_to_pay": event.to_pay
+      }
+    )
+  }
+
+  res.status(200).json({ dues: dues });
+  //Look up user table to find email id of paid_byi
+  //Skip the events, where this user itself is the paid_byi user
+
+  //At this point we have list of  (event idi, paid byi) where this user owes the money
+
+  //Return pairs of (paid_byi, his_parti)
+
+  //Return list of objects containing pair of user email and amont due to that use. Event name as well
+  // [
+  //   {"alok@abc,com", 10, "Lunch on friday" },
+  //   {"arpita@abc,com", 20, "Dinner on Saturday"}
+  // ]
+});
 
 //2. Get my incoming
 router.post("/payin", async (req, res) => {});

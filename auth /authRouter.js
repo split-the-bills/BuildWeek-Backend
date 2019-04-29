@@ -33,9 +33,11 @@ router.post("/login", (req, res) => {
   let username = req.body.username;
   let { password } = req.body;
 
-  console.log("USername ", username);
+  console.log("Username ", username, password);
   Users.findBy({ username: username })
-    .then(user => {
+    .then(users => {
+      user = users[0];
+      console.log("User = ", user);
       if (user && bcrypt.compareSync(password, user.password)) {
         const token = generateToken(user);
         res.status(200).json({
@@ -66,6 +68,7 @@ function generateToken(user) {
   //and found that jwtSecret has a member with the same name jwtsecret as the object containing the secret in form of string
   //const jwtSecret = require("../config/secrets").jwtSecret;if I don't do .jwsecret then its object and to access it
   //everywhere I need to put JwtSecret.jwtSecret; object name and inside the object string name is same
+  console.log("Generate token ");
   return jwt.sign(payload, jwtKey, options);
 }
 module.exports = router;

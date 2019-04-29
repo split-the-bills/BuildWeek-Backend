@@ -17,6 +17,7 @@ function findBy(filter) {
 }
 
 
+
 async function add(event) {
   const [id] = await db('events').insert(event);
 

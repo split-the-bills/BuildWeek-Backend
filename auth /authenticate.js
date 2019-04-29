@@ -17,7 +17,8 @@ function restircted(req, res, next) {
         res.status(401).json({ err: "user not verified" });
       } else {
         console.log("token confirmed", decodedToken);
-        req.decodedJwt = decodedToken; //insert the decoded token in the request part because we pass req
+        req.userInfo = decodedToken; //insert the decoded token in the request part because we pass req
+        console.log(req.userInfo.subject);
         next();
       }
     });
